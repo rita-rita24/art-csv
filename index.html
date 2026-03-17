@@ -116,11 +116,6 @@
       color: var(--color-accent);
     }
 
-    .logo span {
-      font-weight: 400;
-      color: var(--color-text-secondary);
-    }
-
     .nav {
       display: flex;
       align-items: center;
@@ -267,13 +262,13 @@
     }
 
     /* ========================================
-       Tool Area
+       Tool Preview
        ======================================== */
-    #tool {
+    #preview {
       padding: var(--space-4xl) 0;
     }
 
-    .tool-wrapper {
+    .preview-wrapper {
       background: var(--color-surface-elevated);
       border: 1px solid var(--color-border);
       border-radius: var(--radius-lg);
@@ -281,7 +276,7 @@
       box-shadow: var(--shadow-lg);
     }
 
-    .tool-header {
+    .preview-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -290,129 +285,124 @@
       background: var(--color-surface);
     }
 
-    .tool-header-left {
+    .preview-header-left {
       display: flex;
       align-items: center;
       gap: var(--space-md);
     }
 
-    .tool-dots {
+    .preview-dots {
       display: flex;
       gap: 6px;
     }
 
-    .tool-dots span {
+    .preview-dots span {
       width: 10px;
       height: 10px;
       border-radius: 50%;
       background: var(--color-border);
     }
 
-    .tool-title {
+    .preview-title {
       font-size: 0.8125rem;
       color: var(--color-text-tertiary);
       font-weight: 500;
     }
 
-    .tool-actions {
-      display: flex;
-      gap: var(--space-sm);
-    }
-
-    .tool-actions button {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-xs);
-      padding: 0.375rem 0.875rem;
+    .preview-open-link {
       font-size: 0.8125rem;
-      font-family: inherit;
-      font-weight: 500;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--color-border);
-      background: var(--color-white);
-      color: var(--color-text-secondary);
-      cursor: pointer;
-      transition: all var(--transition);
+      color: var(--color-text-tertiary);
+      transition: color var(--transition);
     }
 
-    .tool-actions button:hover {
-      background: var(--color-surface);
+    .preview-open-link:hover {
       color: var(--color-text);
     }
 
-    .tool-actions button svg {
-      width: 14px;
-      height: 14px;
+    .preview-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 280px;
     }
 
-    .tool-body {
-      padding: var(--space-xl);
+    .preview-pane {
+      padding: var(--space-lg) var(--space-xl);
     }
 
-    .tool-textarea {
-      width: 100%;
-      min-height: 200px;
-      padding: var(--space-md);
+    .preview-pane:first-child {
+      border-right: 1px solid var(--color-border-light);
+    }
+
+    .preview-pane-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-tertiary);
+      margin-bottom: var(--space-md);
+    }
+
+    .preview-code {
       font-family: var(--font-mono);
-      font-size: 0.875rem;
-      line-height: 1.8;
-      color: var(--color-text);
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-sm);
-      resize: vertical;
-      outline: none;
-      transition: border-color var(--transition);
-    }
-
-    .tool-textarea:focus {
-      border-color: var(--color-accent);
-    }
-
-    .tool-table-preview {
-      margin-top: var(--space-lg);
-    }
-
-    .tool-table-label {
       font-size: 0.8125rem;
-      color: var(--color-text-tertiary);
-      margin-bottom: var(--space-sm);
-      font-weight: 500;
+      line-height: 1.9;
+      color: var(--color-text-secondary);
+      white-space: pre;
     }
 
-    .tool-table {
+    .preview-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
     }
 
-    .tool-table th,
-    .tool-table td {
-      padding: 0.625rem var(--space-md);
+    .preview-table th,
+    .preview-table td {
+      padding: 0.5rem var(--space-md);
       text-align: left;
       border-bottom: 1px solid var(--color-border-light);
     }
 
-    .tool-table th {
+    .preview-table th {
       font-weight: 600;
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
       color: var(--color-text-secondary);
       background: var(--color-surface);
       border-bottom: 1px solid var(--color-border);
     }
 
-    .tool-table td {
+    .preview-table td {
       color: var(--color-text);
       font-family: var(--font-mono);
       font-size: 0.8125rem;
     }
 
-    .tool-table tbody tr:hover {
+    .preview-cta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-lg);
+      border-top: 1px solid var(--color-border-light);
       background: var(--color-surface);
     }
 
-    .tool-table tbody tr:last-child td {
-      border-bottom: none;
+    .preview-cta a {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--color-accent);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      transition: opacity var(--transition);
+    }
+
+    .preview-cta a:hover {
+      opacity: 0.7;
+    }
+
+    .preview-cta a svg {
+      width: 14px;
+      height: 14px;
     }
 
     /* ========================================
@@ -652,7 +642,7 @@
         padding: var(--space-3xl) 0;
       }
 
-      #tool {
+      #preview {
         padding: var(--space-2xl) 0;
       }
 
@@ -694,33 +684,17 @@
         gap: var(--space-md);
       }
 
-      .tool-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--space-md);
+      .preview-body {
+        grid-template-columns: 1fr;
+      }
+
+      .preview-pane:first-child {
+        border-right: none;
+        border-bottom: 1px solid var(--color-border-light);
+      }
+
+      .preview-header {
         padding: var(--space-md);
-      }
-
-      .tool-actions {
-        width: 100%;
-      }
-
-      .tool-actions button {
-        flex: 1;
-        justify-content: center;
-      }
-
-      .tool-body {
-        padding: var(--space-md);
-      }
-
-      .tool-table {
-        font-size: 0.8125rem;
-      }
-
-      .tool-table th,
-      .tool-table td {
-        padding: 0.5rem;
       }
 
       .footer .container {
@@ -767,7 +741,7 @@
     <div class="container">
       <a href="#" class="logo">ArtCSV</a>
       <nav class="nav" id="nav">
-        <a href="#tool">ツール</a>
+        <a href="#preview">ツール</a>
         <a href="#features">機能紹介</a>
         <a href="#releases">リリースノート</a>
       </nav>
@@ -791,7 +765,7 @@
       <h1>CSVをもっと美しく、<br>もっと軽やかに。</h1>
       <p>ArtCSVは、ブラウザだけで完結するCSV編集ツールです。<br>インストール不要。データはあなたの手元から離れません。</p>
       <div class="hero-actions">
-        <a href="#tool" class="btn btn-primary">
+        <a href="editor.html" class="btn btn-primary">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="2" width="12" height="12" rx="2"/>
             <path d="M6 6h4M6 8h4M6 10h2"/>
@@ -809,52 +783,48 @@
     </div>
   </section>
 
-  <!-- ======== Tool Area ======== -->
-  <section id="tool">
+  <!-- ======== Tool Preview ======== -->
+  <section id="preview">
     <div class="container">
-      <div class="tool-wrapper fade-in">
-        <div class="tool-header">
-          <div class="tool-header-left">
-            <div class="tool-dots">
+      <div class="preview-wrapper fade-in">
+        <div class="preview-header">
+          <div class="preview-header-left">
+            <div class="preview-dots">
               <span></span><span></span><span></span>
             </div>
-            <span class="tool-title">CSV Editor</span>
+            <span class="preview-title">CSV Editor — プレビュー</span>
           </div>
-          <div class="tool-actions">
-            <button id="parseBtn">
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="4 6 8 10 12 6"/>
-              </svg>
-              パース
-            </button>
-            <button id="copyBtn">
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="5" y="5" width="8" height="8" rx="1"/>
-                <path d="M3 11V4a1 1 0 011-1h7"/>
-              </svg>
-              コピー
-            </button>
-            <button id="clearBtn">
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="4" y1="4" x2="12" y2="12"/>
-                <line x1="12" y1="4" x2="4" y2="12"/>
-              </svg>
-              クリア
-            </button>
-          </div>
+          <a href="editor.html" class="preview-open-link">エディタを開く →</a>
         </div>
-        <div class="tool-body">
-          <textarea class="tool-textarea" id="csvInput" placeholder="ここにCSVデータを貼り付けてください…&#10;&#10;例:&#10;名前,年齢,都市&#10;田中太郎,28,東京&#10;鈴木花子,34,大阪&#10;佐藤次郎,22,福岡" spellcheck="false">名前,年齢,都市
+        <div class="preview-body">
+          <div class="preview-pane">
+            <p class="preview-pane-label">入力</p>
+            <div class="preview-code">名前,年齢,都市
 田中太郎,28,東京
 鈴木花子,34,大阪
-佐藤次郎,22,福岡</textarea>
-          <div class="tool-table-preview" id="tablePreview">
-            <p class="tool-table-label">プレビュー</p>
-            <table class="tool-table" id="csvTable">
-              <thead></thead>
-              <tbody></tbody>
+佐藤次郎,22,福岡</div>
+          </div>
+          <div class="preview-pane">
+            <p class="preview-pane-label">プレビュー</p>
+            <table class="preview-table">
+              <thead>
+                <tr><th>名前</th><th>年齢</th><th>都市</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>田中太郎</td><td>28</td><td>東京</td></tr>
+                <tr><td>鈴木花子</td><td>34</td><td>大阪</td></tr>
+                <tr><td>佐藤次郎</td><td>22</td><td>福岡</td></tr>
+              </tbody>
             </table>
           </div>
+        </div>
+        <div class="preview-cta">
+          <a href="editor.html">
+            エディタを開いてCSVを編集する
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 8h10M9 4l4 4-4 4"/>
+            </svg>
+          </a>
         </div>
       </div>
     </div>
@@ -952,137 +922,29 @@
       navToggle.addEventListener("click", function () {
         nav.classList.toggle("is-open");
       });
-      /* Close nav on link click */
       nav.querySelectorAll("a").forEach(function (link) {
         link.addEventListener("click", function () {
           nav.classList.remove("is-open");
         });
       });
 
-      /* ---- CSV Parser ---- */
-      function parseCSV(text) {
-        var lines = text.trim().split("\n");
-        return lines.map(function (line) {
-          var result = [];
-          var current = "";
-          var inQuotes = false;
-          for (var i = 0; i < line.length; i++) {
-            var ch = line[i];
-            if (inQuotes) {
-              if (ch === '"' && line[i + 1] === '"') {
-                current += '"';
-                i++;
-              } else if (ch === '"') {
-                inQuotes = false;
-              } else {
-                current += ch;
-              }
-            } else {
-              if (ch === '"') {
-                inQuotes = true;
-              } else if (ch === ",") {
-                result.push(current);
-                current = "";
-              } else {
-                current += ch;
-              }
-            }
-          }
-          result.push(current);
-          return result;
-        });
-      }
-
-      function escapeHTML(str) {
-        var div = document.createElement("div");
-        div.appendChild(document.createTextNode(str));
-        return div.innerHTML;
-      }
-
-      function renderTable(rows) {
-        var table = document.getElementById("csvTable");
-        var thead = table.querySelector("thead");
-        var tbody = table.querySelector("tbody");
-        var preview = document.getElementById("tablePreview");
-
-        if (rows.length === 0) {
-          thead.innerHTML = "";
-          tbody.innerHTML = "";
-          preview.style.display = "none";
-          return;
-        }
-
-        preview.style.display = "block";
-        var header = rows[0];
-        var body = rows.slice(1);
-
-        thead.innerHTML =
-          "<tr>" +
-          header
-            .map(function (h) {
-              return "<th>" + escapeHTML(h) + "</th>";
-            })
-            .join("") +
-          "</tr>";
-
-        tbody.innerHTML = body
-          .map(function (row) {
-            return (
-              "<tr>" +
-              row
-                .map(function (cell) {
-                  return "<td>" + escapeHTML(cell) + "</td>";
-                })
-                .join("") +
-              "</tr>"
-            );
-          })
-          .join("");
-      }
-
-      function doParse() {
-        var text = document.getElementById("csvInput").value;
-        if (!text.trim()) {
-          renderTable([]);
-          return;
-        }
-        var rows = parseCSV(text);
-        renderTable(rows);
-      }
-
-      /* ---- Parse on load & button click ---- */
-      document.getElementById("parseBtn").addEventListener("click", doParse);
-      doParse();
-
-      /* ---- Clear ---- */
-      document.getElementById("clearBtn").addEventListener("click", function () {
-        document.getElementById("csvInput").value = "";
-        renderTable([]);
-      });
-
-      /* ---- Copy ---- */
-      document.getElementById("copyBtn").addEventListener("click", function () {
-        var text = document.getElementById("csvInput").value;
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(text);
-        }
-      });
-
-      /* ---- Download HTML ---- */
+      /* ---- Download editor.html ---- */
       document.getElementById("downloadBtn").addEventListener("click", function (e) {
         e.preventDefault();
-        var html = document.documentElement.outerHTML;
-        var blob = new Blob(["<!DOCTYPE html>\n" + html], {
-          type: "text/html;charset=utf-8",
-        });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        a.href = url;
-        a.download = "artcsv.html";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        /* Fetch editor.html and download it */
+        fetch("editor.html")
+          .then(function (res) { return res.text(); })
+          .then(function (html) {
+            var blob = new Blob([html], { type: "text/html;charset=utf-8" });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url;
+            a.download = "artcsv.html";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          });
       });
 
       /* ---- Scroll fade-in observer ---- */

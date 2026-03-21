@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <img src="preview.png" alt="ArtCSV エディタ スクリーンショット" width="720" />
+  <img src="public/preview.png" alt="ArtCSV エディタ スクリーンショット" width="720" />
 </p>
 
 ---
@@ -258,10 +258,10 @@
 art-csv/
 ├── ArtCSV.html                  # エディタ本体（単独で動作するHTMLファイル）
 ├── index.html                   # ランディングページ
-├── preview.png                  # エディタのスクリーンショット
 ├── package.json                 # プロジェクト設定
 ├── tsconfig.json                # TypeScript設定
 ├── public/
+│   ├── preview.png              # エディタのスクリーンショット
 │   ├── css/
 │   │   └── style.css            # ランディングページのスタイル
 │   ├── js/

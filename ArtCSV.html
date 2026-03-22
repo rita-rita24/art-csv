@@ -990,17 +990,95 @@
     const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     /* ==============================================================
+       IndexedDB Storage
+       ============================================================== */
+    const IDBStore = (() => {
+      const DB_NAME = 'csvEditorDB';
+      const DB_VERSION = 1;
+      const STORE_NAME = 'kvStore';
+      let _db = null;
+      let _fallback = false;
+
+      const open = () => new Promise((resolve, reject) => {
+        if (_db) return resolve(_db);
+        try {
+          const req = indexedDB.open(DB_NAME, DB_VERSION);
+          req.onupgradeneeded = () => req.result.createObjectStore(STORE_NAME);
+          req.onsuccess = () => { _db = req.result; resolve(_db); };
+          req.onerror = () => { _fallback = true; resolve(null); };
+        } catch { _fallback = true; resolve(null); }
+      });
+
+      const get = async (key) => {
+        if (_fallback) {
+          const v = localStorage.getItem(key);
+          if (v === null) return undefined;
+          try { return JSON.parse(v); } catch { return v; }
+        }
+        const db = await open();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readonly');
+          const req = tx.objectStore(STORE_NAME).get(key);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      };
+
+      const set = async (key, value) => {
+        if (_fallback) {
+          localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+          return;
+        }
+        const db = await open();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          tx.objectStore(STORE_NAME).put(value, key);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      };
+
+      const remove = async (key) => {
+        if (_fallback) { localStorage.removeItem(key); return; }
+        const db = await open();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          tx.objectStore(STORE_NAME).delete(key);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      };
+
+      return { open, get, set, remove };
+    })();
+
+    const migrateFromLocalStorage = async () => {
+      const keys = ['csvEditor_theme', 'csvEditor_state'];
+      for (const key of keys) {
+        const lsValue = localStorage.getItem(key);
+        if (lsValue === null) continue;
+        const existing = await IDBStore.get(key);
+        if (existing !== undefined) { localStorage.removeItem(key); continue; }
+        try {
+          const value = key === 'csvEditor_state' ? JSON.parse(lsValue) : lsValue;
+          await IDBStore.set(key, value);
+        } catch { /* ignore parse errors */ }
+        localStorage.removeItem(key);
+      }
+    };
+
+    /* ==============================================================
        Theme
        ============================================================== */
     const setTheme = (theme) => {
       document.documentElement.style.colorScheme = theme;
-      localStorage.setItem('csvEditor_theme', theme);
+      IDBStore.set('csvEditor_theme', theme).catch(() => {});
       const $sel = qs('#settingTheme');
       if ($sel) $sel.value = theme;
     };
 
-    const initTheme = () => {
-      const saved = localStorage.getItem('csvEditor_theme');
+    const initTheme = async () => {
+      const saved = await IDBStore.get('csvEditor_theme');
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       setTheme(saved ?? (prefersDark ? 'dark' : 'light'));
     };
@@ -1082,14 +1160,25 @@
       let isResizing = false, resizeColumnIndex = -1, resizeStartX = 0, resizeStartWidth = 0;
 
       /* --- Persistence --- */
+      let _saveTimer = null;
       const saveToStorage = () => {
-        try { localStorage.setItem('csvEditor_state', JSON.stringify(state)); }
-        catch (e) { console.warn('LocalStorage save failed:', e); }
+        if (_saveTimer !== null) clearTimeout(_saveTimer);
+        _saveTimer = setTimeout(() => {
+          _saveTimer = null;
+          IDBStore.set('csvEditor_state', structuredClone(state)).catch(e =>
+            console.warn('IndexedDB save failed:', e)
+          );
+        }, 300);
       };
 
-      const loadFromStorage = () => {
+      const clearStorage = () => {
+        if (_saveTimer !== null) { clearTimeout(_saveTimer); _saveTimer = null; }
+        IDBStore.remove('csvEditor_state').catch(e => console.warn('IndexedDB remove failed:', e));
+      };
+
+      const loadFromStorage = async () => {
         try {
-          const saved = JSON.parse(localStorage.getItem('csvEditor_state') ?? 'null');
+          const saved = await IDBStore.get('csvEditor_state');
           if (saved) state = saved;
         } catch { /* ignore */ }
       };
@@ -1465,7 +1554,7 @@
 
         if (state.data[0]?.length === 0) {
           state.data = []; state.hasHeader = false; state.columnWidths = {};
-          renderTable(); updateStats(); localStorage.removeItem('csvEditor_state');
+          renderTable(); updateStats(); clearStorage();
           showToast('すべての列が削除されました。データをクリアしました', 'success');
           return;
         }
@@ -1511,7 +1600,7 @@
         state.data.splice(rowIndex, 1);
         if (state.data.length === 0) {
           state.hasHeader = false; state.columnWidths = {};
-          renderTable(); updateStats(); localStorage.removeItem('csvEditor_state');
+          renderTable(); updateStats(); clearStorage();
           showToast('すべての行が削除されました。データをクリアしました', 'success');
           return;
         }
@@ -1608,7 +1697,7 @@
         openModal('データをクリア', 'すべてのデータを削除しますか？この操作は元に戻せます。', () => {
           saveToHistory();
           state.data = []; state.hasHeader = false; state.columnWidths = {};
-          renderTable(); updateStats(); localStorage.removeItem('csvEditor_state');
+          renderTable(); updateStats(); clearStorage();
           showToast('🗑 すべてのデータをクリアしました');
         });
       };
@@ -1767,21 +1856,34 @@
       });
 
       /* --- Init --- */
-      const init = () => {
-        loadFromStorage();
+      const init = async () => {
+        await loadFromStorage();
         if (state.data.length > 0) renderTable();
         updateStats();
         updateButtonLabels();
       };
 
-      return { init };
+      const flushStorage = () => {
+        if (_saveTimer !== null) {
+          clearTimeout(_saveTimer);
+          _saveTimer = null;
+          IDBStore.set('csvEditor_state', structuredClone(state)).catch(() => {});
+        }
+      };
+
+      return { init, flushStorage };
     })();
 
     /* ==============================================================
        App Init
        ============================================================== */
-    initTheme();
-    Editor.init();
+    (async () => {
+      await IDBStore.open();
+      await migrateFromLocalStorage();
+      await initTheme();
+      await Editor.init();
+      window.addEventListener('beforeunload', () => Editor.flushStorage());
+    })();
   </script>
 </body>
 </html>

@@ -1623,6 +1623,10 @@
       };
 
       const addColumn = () => {
+        if (state.data.length === 0) {
+          showToast('データがありません。先に行を追加してください', 'error');
+          return;
+        }
         saveToHistory();
         state.data = state.data.map(r => [...r, '']);
         renderTable(); updateStats(); saveToStorage();

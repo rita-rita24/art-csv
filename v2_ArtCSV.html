@@ -769,6 +769,122 @@
           cursor: pointer;
         }
       }
+
+      /* === Info / Help Modal === */
+      .info-modal {
+        max-inline-size: 560px;
+        max-block-size: 90vh;
+        overflow-y: auto;
+
+        & h3 {
+          font-size: 1.2rem;
+          margin-block-end: 16px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+      }
+
+      .info-badge {
+        display: inline-block;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 20px;
+        background: var(--primary);
+        color: #fff;
+        vertical-align: middle;
+        line-height: 1.4;
+      }
+
+      .info-section {
+        margin-block-end: 16px;
+        padding-block-end: 16px;
+        border-block-end: 1px solid var(--border);
+
+        &:last-of-type {
+          border-block-end: none;
+          margin-block-end: 8px;
+        }
+
+        & h4 {
+          font-size: 0.95rem;
+          font-weight: 600;
+          margin-block-end: 8px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        & p {
+          color: var(--text-muted);
+          font-size: 0.85rem;
+          line-height: 1.7;
+        }
+      }
+
+      .info-offline-banner {
+        background: light-dark(oklch(0.96 0.04 145), oklch(0.22 0.03 145));
+        border: 1px solid light-dark(oklch(0.85 0.10 145), oklch(0.35 0.08 145));
+        border-radius: 10px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+
+        & .material-symbols-outlined {
+          font-size: 1.6rem;
+          color: var(--success);
+          flex-shrink: 0;
+          margin-block-start: 2px;
+        }
+
+        & p {
+          margin: 0;
+        }
+      }
+
+      .shortcut-table {
+        inline-size: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+
+        & td {
+          padding: 6px 8px;
+          border: none;
+          background: transparent;
+          white-space: normal;
+        }
+
+        & tr:not(:last-child) td {
+          border-block-end: 1px solid var(--border);
+        }
+
+        & td:first-child {
+          color: var(--text-muted);
+          inline-size: 40%;
+        }
+      }
+
+      kbd {
+        display: inline-block;
+        padding: 2px 7px;
+        font-family: inherit;
+        font-size: 0.8rem;
+        font-weight: 600;
+        line-height: 1.4;
+        color: var(--text);
+        background: var(--header-bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        box-shadow: 0 1px 0 var(--border);
+      }
+
+      .info-legal {
+        font-size: 0.8rem !important;
+        color: var(--text-muted);
+        line-height: 1.7;
+      }
     }
 
     /* ----------------------------------------------------------------
@@ -820,6 +936,9 @@
           <span>サイズ: <span class="value" id="dataSize">0 KB</span></span>
           <span>形式: <span class="value" id="dataFormat">-</span></span>
         </div>
+        <button class="theme-toggle" id="infoBtn" title="情報＆ヘルプ">
+          <span class="material-symbols-outlined">help</span>
+        </button>
         <button class="theme-toggle" id="settingsBtn" title="設定">
           <span class="material-symbols-outlined">settings</span>
         </button>
@@ -910,6 +1029,45 @@
       <div class="modal-actions">
         <button class="btn" id="modalCancelBtn">キャンセル</button>
         <button class="btn btn-danger" id="modalConfirmBtn">削除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 情報＆ヘルプモーダル -->
+  <div class="modal-overlay" id="infoOverlay">
+    <div class="modal info-modal">
+      <h3>
+        <span class="material-symbols-outlined">info</span>
+        アプリ情報＆ヘルプ
+        <span class="info-badge">v1.0.0</span>
+      </h3>
+
+      <div class="info-section">
+        <div class="info-offline-banner">
+          <span class="material-symbols-outlined">shield</span>
+          <p>完全オフライン動作。入力されたデータが外部のサーバーに送信されることは一切ありません。機密性の高いビジネスデータもブラウザ内で安全に処理されます。</p>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h4><span class="material-symbols-outlined">keyboard</span> ショートカット一覧</h4>
+        <table class="shortcut-table">
+          <tr><td>元に戻す</td><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td></tr>
+          <tr><td>やり直す</td><td><kbd>Ctrl</kbd> + <kbd>Y</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></td></tr>
+          <tr><td>検索</td><td><kbd>Ctrl</kbd> + <kbd>F</kbd></td></tr>
+          <tr><td>セル移動</td><td><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> / <kbd>Tab</kbd> / <kbd>Enter</kbd></td></tr>
+          <tr><td>ヘルプを開く</td><td><kbd>?</kbd></td></tr>
+        </table>
+      </div>
+
+      <div class="info-section">
+        <h4><span class="material-symbols-outlined">gavel</span> 免責事項</h4>
+        <p class="info-legal">本ツールの利用により生じたデータの損失や損害について、開発者は一切の責任を負いかねます。重要なデータは事前のバックアップをお願いします。</p>
+        <p class="info-legal" style="margin-block-start:8px;">© 2026 ArtCSV Developer All rights reserved.</p>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="infoCloseBtn">閉じる</button>
       </div>
     </div>
   </div>
@@ -1755,7 +1913,16 @@
         if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
         if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); return; }
         if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); $searchInput.focus(); return; }
-        if (e.key === 'Escape') { clearSearch(); qs('#settingsOverlay')?.classList.remove('show'); return; }
+        if (e.key === 'Escape') { clearSearch(); qs('#settingsOverlay')?.classList.remove('show'); qs('#infoOverlay')?.classList.remove('show'); return; }
+        if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          const tag = document.activeElement.tagName;
+          const editable = document.activeElement.isContentEditable;
+          if (tag !== 'INPUT' && tag !== 'TEXTAREA' && !editable) {
+            e.preventDefault();
+            qs('#infoOverlay').classList.add('show');
+            return;
+          }
+        }
         if (document.activeElement.tagName === 'TD' && document.activeElement.isContentEditable) handleCellNavigation(e, document.activeElement);
       });
 
@@ -1791,6 +1958,14 @@
         if ($dlLabel) $dlLabel.textContent = `${label}保存`;
         $dataFormat.textContent = label;
       };
+
+      /* --- Info / Help Modal --- */
+      const $infoOverlay = qs('#infoOverlay');
+      qs('#infoBtn').addEventListener('click', () => $infoOverlay.classList.add('show'));
+      qs('#infoCloseBtn').addEventListener('click', () => $infoOverlay.classList.remove('show'));
+      $infoOverlay.addEventListener('click', (e) => {
+        if (e.target === $infoOverlay) $infoOverlay.classList.remove('show');
+      });
 
       /* --- Settings Modal --- */
       const $settingsOverlay = qs('#settingsOverlay');

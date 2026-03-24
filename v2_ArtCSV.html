@@ -744,6 +744,88 @@
         }
       }
 
+      /* === Help Modal === */
+      .help-modal {
+        max-inline-size: 540px;
+        max-block-size: 80vh;
+        overflow-y: auto;
+
+        & h3 {
+          font-size: 1.2rem;
+          margin-block-end: 16px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+      }
+
+      .shortcut-table {
+        inline-size: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+        margin-block-end: 8px;
+
+        & thead th {
+          text-align: start;
+          padding: 6px 10px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: var(--text-muted);
+          border-block-end: 1px solid var(--border);
+          position: static;
+          background: transparent;
+        }
+
+        & tbody tr {
+          border-block-end: 1px solid var(--border);
+
+          &:last-child { border-block-end: none; }
+          &:hover td { background: var(--header-bg); }
+        }
+
+        & td {
+          padding: 9px 10px;
+          background: transparent;
+          white-space: nowrap;
+        }
+
+        & .shortcut-section {
+          padding-block: 14px 4px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          background: transparent !important;
+          border-block-end: none !important;
+          border-block-start: 1px solid var(--border);
+
+          &:first-child { border-block-start: none; padding-block-start: 2px; }
+        }
+      }
+
+      .kbd {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        flex-wrap: nowrap;
+      }
+
+      kbd {
+        display: inline-block;
+        padding: 2px 7px;
+        font-family: inherit;
+        font-size: 0.8rem;
+        font-weight: 500;
+        background: var(--header-bg);
+        border: 1px solid var(--border);
+        border-block-end-width: 2px;
+        border-radius: 5px;
+        color: var(--text);
+        line-height: 1.5;
+        white-space: nowrap;
+      }
+
       .settings-checkbox {
         display: flex;
         align-items: center;
@@ -798,10 +880,44 @@
 </head>
 
 <body>
+  <noscript>
+    <style>
+      body > :not(#noscript-screen) { display: none !important; }
+      #noscript-screen {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", sans-serif;
+        background: #f8f9fa;
+        color: #333;
+        text-align: center;
+        padding: 40px 20px;
+      }
+      #noscript-screen h2 {
+        font-size: 1.5rem;
+        margin-bottom: 12px;
+      }
+      #noscript-screen p {
+        font-size: 1rem;
+        color: #666;
+      }
+    </style>
+    <div id="noscript-screen">
+      <h2>⚠️ JavaScriptを有効にしてください</h2>
+      <p>このアプリケーションの使用には JavaScript が必要です。<br>ブラウザの設定から JavaScript を有効にしてください。</p>
+    </div>
+  </noscript>
+
   <div class="container">
     <!-- ヘッダー -->
     <header class="header">
-      <h1><span class="material-symbols-outlined">table_chart</span> CSV/TSV エディタ</h1>
+      <h1>
+        <span class="material-symbols-outlined">table_chart</span>
+        CSV/TSV エディタ
+        <span id="versionBadge" style="font-size:0.7rem;font-weight:400;color:var(--text-muted);background:var(--header-bg);border:1px solid var(--border);padding:2px 8px;border-radius:999px;vertical-align:middle;"></span>
+      </h1>
       <div class="header-right">
         <div class="stats" id="stats">
           <span>行: <span class="value" id="rowCount">0</span></span>
@@ -809,6 +925,13 @@
           <span>サイズ: <span class="value" id="dataSize">0 KB</span></span>
           <span>形式: <span class="value" id="dataFormat">-</span></span>
         </div>
+        <span title="データはブラウザ外へ送信されません" style="font-size:0.75rem;color:var(--text-muted);display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);white-space:nowrap;">
+          <span class="material-symbols-outlined" style="font-size:1rem;color:var(--success);">lock</span>
+          完全オフライン
+        </span>
+        <button class="theme-toggle" id="helpBtn" title="ショートカット一覧 (?)">
+          <span class="material-symbols-outlined">help_outline</span>
+        </button>
         <button class="theme-toggle" id="settingsBtn" title="設定">
           <span class="material-symbols-outlined">settings</span>
         </button>
@@ -962,8 +1085,50 @@
     </div>
   </div>
 
+  <!-- ショートカット一覧モーダル -->
+  <div class="modal-overlay" id="helpOverlay">
+    <div class="modal help-modal">
+      <h3><span class="material-symbols-outlined">keyboard</span> キーボードショートカット</h3>
+      <table class="shortcut-table">
+        <thead>
+          <tr><th>操作</th><th>ショートカット</th></tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="2" class="shortcut-section">データ操作</td></tr>
+          <tr><td>データ貼り付け</td><td><span class="kbd"><kbd>Ctrl</kbd>+<kbd>V</kbd></span></td></tr>
+          <tr><td>元に戻す</td><td><span class="kbd"><kbd>Ctrl</kbd>+<kbd>Z</kbd></span></td></tr>
+          <tr><td>やり直し</td><td><span class="kbd"><kbd>Ctrl</kbd>+<kbd>Y</kbd></span> / <span class="kbd"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></span></td></tr>
+
+          <tr><td colspan="2" class="shortcut-section">検索</td></tr>
+          <tr><td>検索ボックスを開く</td><td><span class="kbd"><kbd>Ctrl</kbd>+<kbd>F</kbd></span></td></tr>
+          <tr><td>次の一致へ</td><td><span class="kbd"><kbd>Enter</kbd></span>（検索ボックス内）</td></tr>
+          <tr><td>前の一致へ</td><td><span class="kbd"><kbd>Shift</kbd>+<kbd>Enter</kbd></span>（検索ボックス内）</td></tr>
+
+          <tr><td colspan="2" class="shortcut-section">セル移動（編集中）</td></tr>
+          <tr><td>次のセルへ</td><td><span class="kbd"><kbd>Tab</kbd></span></td></tr>
+          <tr><td>前のセルへ</td><td><span class="kbd"><kbd>Shift</kbd>+<kbd>Tab</kbd></span></td></tr>
+          <tr><td>下のセルへ</td><td><span class="kbd"><kbd>Enter</kbd></span></td></tr>
+          <tr><td>上下左右へ移動</td><td><span class="kbd"><kbd>Alt</kbd>+<kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></span></td></tr>
+
+          <tr><td colspan="2" class="shortcut-section">画面</td></tr>
+          <tr><td>ショートカット一覧</td><td><span class="kbd"><kbd>?</kbd></span></td></tr>
+          <tr><td>モーダル・検索を閉じる</td><td><span class="kbd"><kbd>Esc</kbd></span></td></tr>
+        </tbody>
+      </table>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="helpCloseBtn">閉じる</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/encoding-japanese@2.2.0/encoding.min.js"></script>
   <script>
+    /* ==============================================================
+       Version
+       ============================================================== */
+    const VERSION = 'v2.0.0';
+    document.getElementById('versionBadge').textContent = VERSION;
+
     /* ==============================================================
        Utility Helpers
        ============================================================== */
@@ -1654,7 +1819,8 @@
         if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
         if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); return; }
         if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); $searchInput.focus(); return; }
-        if (e.key === 'Escape') { clearSearch(); qs('#settingsOverlay')?.classList.remove('show'); return; }
+        if (e.key === 'Escape') { clearSearch(); qs('#settingsOverlay')?.classList.remove('show'); closeHelp(); return; }
+        if (e.key === '?' && !e.ctrlKey && !e.metaKey && document.activeElement.tagName !== 'INPUT' && !document.activeElement.isContentEditable) { e.preventDefault(); openHelp(); return; }
         if (document.activeElement.tagName === 'TD' && document.activeElement.isContentEditable) handleCellNavigation(e, document.activeElement);
       });
 
@@ -1754,6 +1920,16 @@
       qs('#settingTheme').addEventListener('change', (e) => {
         setTheme(e.target.value);
       });
+
+      /* --- Help Modal --- */
+      const $helpOverlay = qs('#helpOverlay');
+
+      const openHelp  = () => $helpOverlay.classList.add('show');
+      const closeHelp = () => $helpOverlay.classList.remove('show');
+
+      qs('#helpBtn').addEventListener('click', openHelp);
+      qs('#helpCloseBtn').addEventListener('click', closeHelp);
+      $helpOverlay.addEventListener('click', (e) => { if (e.target === $helpOverlay) closeHelp(); });
 
       /* --- Init --- */
       const init = () => {

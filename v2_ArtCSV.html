@@ -118,6 +118,25 @@
         }
       }
 
+      .filename-badge {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        background: var(--header-bg);
+        padding: 2px 10px;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+        max-inline-size: 260px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
+
+        &:empty {
+          display: none;
+        }
+      }
+
       .header-right {
         display: flex;
         align-items: center;
@@ -928,7 +947,7 @@
   <div class="container">
     <!-- ヘッダー -->
     <header class="header">
-      <h1><span class="material-symbols-outlined">table_chart</span> CSV/TSV エディタ</h1>
+      <h1><span class="material-symbols-outlined">table_chart</span> CSV/TSV エディタ <span class="filename-badge" id="filenameBadge" title="開いているファイル"></span></h1>
       <div class="header-right">
         <div class="stats" id="stats">
           <span>行: <span class="value" id="rowCount">0</span></span>
@@ -961,6 +980,10 @@
     <!-- ツールバー -->
     <div class="toolbar">
       <div class="toolbar-group">
+        <button class="btn" id="openFileBtn" title="ファイルを開く (Ctrl+O)"><span class="material-symbols-outlined">folder_open</span> 開く</button>
+        <button class="btn" id="saveBtn" title="上書き保存 (Ctrl+S)"><span class="material-symbols-outlined">save</span> <span id="saveBtnLabel">保存</span></button>
+      </div>
+      <div class="toolbar-group">
         <button class="btn" id="undoBtn" disabled title="元に戻す"><span class="material-symbols-outlined">undo</span></button>
         <button class="btn" id="redoBtn" disabled title="やり直し"><span class="material-symbols-outlined">redo</span></button>
       </div>
@@ -971,7 +994,7 @@
       </div>
       <div class="toolbar-group">
         <button class="btn" id="copyBtn" title="コピー"><span class="material-symbols-outlined">content_copy</span> <span id="copyBtnLabel">CSVコピー</span></button>
-        <button class="btn" id="dlBtn" title="ダウンロード"><span class="material-symbols-outlined">save</span> <span id="dlBtnLabel">CSV保存</span></button>
+        <button class="btn" id="dlBtn" title="名前を付けて保存"><span class="material-symbols-outlined">download</span> <span id="dlBtnLabel">CSV保存</span></button>
       </div>
       <div class="toolbar-group ml-auto">
         <button class="btn btn-danger" id="clearBtn" title="すべてクリア"><span class="material-symbols-outlined">delete</span> クリア</button>
@@ -1052,6 +1075,8 @@
       <div class="info-section">
         <h4><span class="material-symbols-outlined">keyboard</span> ショートカット一覧</h4>
         <table class="shortcut-table">
+          <tr><td>ファイルを開く</td><td><kbd>Ctrl</kbd> + <kbd>O</kbd></td></tr>
+          <tr><td>上書き保存</td><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td></tr>
           <tr><td>元に戻す</td><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td></tr>
           <tr><td>やり直す</td><td><kbd>Ctrl</kbd> + <kbd>Y</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></td></tr>
           <tr><td>検索</td><td><kbd>Ctrl</kbd> + <kbd>F</kbd></td></tr>
@@ -1316,6 +1341,15 @@
       let activeColumnIndex = -1, activeRowIndex = -1;
       let searchMatches = [], currentMatchIndex = -1;
       let isResizing = false, resizeColumnIndex = -1, resizeStartX = 0, resizeStartWidth = 0;
+
+      /* --- File Handle (File System Access API) --- */
+      let _fileHandle = null;
+      const $filenameBadge = qs('#filenameBadge');
+
+      const updateFilenameBadge = (name) => {
+        $filenameBadge.textContent = name || '';
+        $filenameBadge.title = name ? `開いているファイル: ${name}` : '';
+      };
 
       /* --- Persistence --- */
       let _saveTimer = null;
@@ -1816,6 +1850,121 @@
         return 'txt';
       };
 
+      /* --- File Open --- */
+      const decodeFileBytes = (arrayBuffer) => {
+        const bytes = new Uint8Array(arrayBuffer);
+        // Detect BOM
+        if (bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) {
+          return new TextDecoder('utf-8').decode(bytes.slice(3));
+        }
+        // Try Shift-JIS detection via encoding-japanese
+        if (typeof Encoding !== 'undefined') {
+          const detected = Encoding.detect(bytes);
+          if (detected && detected !== 'UTF8' && detected !== 'ASCII') {
+            return Encoding.convert(bytes, { to: 'UNICODE', from: detected, type: 'string' });
+          }
+        }
+        return new TextDecoder('utf-8').decode(bytes);
+      };
+
+      const loadFileContent = (arrayBuffer, fileName) => {
+        const text = decodeFileBytes(arrayBuffer);
+        if (!text.trim()) { showToast('ファイルが空です', 'error'); return; }
+        processData(text);
+        updateFilenameBadge(fileName);
+        showToast(`📂 ${fileName} を開きました`, 'success');
+      };
+
+      const openFile = async () => {
+        // File System Access API (Chrome/Edge)
+        if (window.showOpenFilePicker) {
+          try {
+            const [handle] = await window.showOpenFilePicker({
+              types: [{
+                description: 'CSV/TSV ファイル',
+                accept: { 'text/*': ['.csv', '.tsv', '.txt'] }
+              }],
+              multiple: false
+            });
+            _fileHandle = handle;
+            const file = await handle.getFile();
+            const buf = await file.arrayBuffer();
+            loadFileContent(buf, file.name);
+          } catch (e) {
+            if (e.name !== 'AbortError') showToast('ファイルを開けませんでした', 'error');
+          }
+          return;
+        }
+        // Fallback: <input type="file">
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain';
+        input.addEventListener('change', async () => {
+          const file = input.files?.[0];
+          if (!file) return;
+          _fileHandle = null;
+          const buf = await file.arrayBuffer();
+          loadFileContent(buf, file.name);
+        });
+        input.click();
+      };
+
+      /* --- Save (overwrite) --- */
+      const buildBlob = (text) => {
+        if (state.encoding === 'shift-jis' && typeof Encoding !== 'undefined') {
+          const unicodeArray = Encoding.stringToCode(text);
+          const sjisArray = Encoding.convert(unicodeArray, { to: 'SJIS', from: 'UNICODE' });
+          return new Blob([new Uint8Array(sjisArray)], { type: 'application/octet-stream' });
+        }
+        const bom = state.bom ? '\uFEFF' : '';
+        return new Blob([`${bom}${text}`], { type: 'text/plain;charset=utf-8' });
+      };
+
+      const saveFile = async () => {
+        if (state.data.length === 0) { showToast('保存するデータがありません', 'error'); return; }
+        const text = generateOutput(state.delimiter);
+
+        // Overwrite via File System Access API
+        if (_fileHandle) {
+          try {
+            const writable = await _fileHandle.createWritable();
+            await writable.write(buildBlob(text));
+            await writable.close();
+            showToast(`💾 ${_fileHandle.name} に保存しました`, 'success');
+            return;
+          } catch (e) {
+            if (e.name === 'AbortError') return;
+            showToast('上書き保存に失敗しました。名前を付けて保存します。', 'error');
+          }
+        }
+
+        // Save As via File System Access API
+        if (window.showSaveFilePicker) {
+          try {
+            const ext = getFormatExt();
+            const handle = await window.showSaveFilePicker({
+              suggestedName: `data_${new Date().toISOString().slice(0, 10)}.${ext}`,
+              types: [{
+                description: `${getFormatLabel()} ファイル`,
+                accept: { 'text/*': [`.${ext}`] }
+              }]
+            });
+            _fileHandle = handle;
+            const writable = await handle.createWritable();
+            await writable.write(buildBlob(text));
+            await writable.close();
+            updateFilenameBadge(handle.name);
+            showToast(`💾 ${handle.name} に保存しました`, 'success');
+          } catch (e) {
+            if (e.name !== 'AbortError') showToast('保存に失敗しました', 'error');
+          }
+          return;
+        }
+
+        // Fallback: download
+        downloadData();
+      };
+
       const copyData = async () => {
         if (state.data.length === 0) { showToast('コピーするデータがありません', 'error'); return; }
         try {
@@ -1856,6 +2005,7 @@
         openModal('データをクリア', 'すべてのデータを削除しますか？この操作は元に戻せます。', () => {
           saveToHistory();
           state.data = []; state.hasHeader = false; state.columnWidths = {};
+          _fileHandle = null; updateFilenameBadge('');
           renderTable(); updateStats(); clearStorage();
           showToast('🗑 すべてのデータをクリアしました');
         });
@@ -1910,6 +2060,8 @@
       });
 
       document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveFile(); return; }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'o') { e.preventDefault(); openFile(); return; }
         if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
         if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); return; }
         if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); $searchInput.focus(); return; }
@@ -1933,6 +2085,8 @@
       });
 
       /* --- Toolbar Wiring --- */
+      qs('#openFileBtn').addEventListener('click', openFile);
+      qs('#saveBtn').addEventListener('click', saveFile);
       $undoBtn.addEventListener('click', undo);
       $redoBtn.addEventListener('click', redo);
       qs('#pasteBtn').addEventListener('click', triggerPaste);
@@ -1954,8 +2108,10 @@
         const label = getFormatLabel();
         const $copyLabel = qs('#copyBtnLabel');
         const $dlLabel = qs('#dlBtnLabel');
+        const $saveLabel = qs('#saveBtnLabel');
         if ($copyLabel) $copyLabel.textContent = `${label}コピー`;
         if ($dlLabel) $dlLabel.textContent = `${label}保存`;
+        if ($saveLabel) $saveLabel.textContent = _fileHandle ? '上書き保存' : '保存';
         $dataFormat.textContent = label;
       };
 

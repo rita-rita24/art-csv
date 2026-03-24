@@ -798,10 +798,44 @@
 </head>
 
 <body>
+  <noscript>
+    <style>
+      body > :not(#noscript-screen) { display: none !important; }
+      #noscript-screen {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", sans-serif;
+        background: #f8f9fa;
+        color: #333;
+        text-align: center;
+        padding: 40px 20px;
+      }
+      #noscript-screen h2 {
+        font-size: 1.5rem;
+        margin-bottom: 12px;
+      }
+      #noscript-screen p {
+        font-size: 1rem;
+        color: #666;
+      }
+    </style>
+    <div id="noscript-screen">
+      <h2>⚠️ JavaScriptを有効にしてください</h2>
+      <p>このアプリケーションの使用には JavaScript が必要です。<br>ブラウザの設定から JavaScript を有効にしてください。</p>
+    </div>
+  </noscript>
+
   <div class="container">
     <!-- ヘッダー -->
     <header class="header">
-      <h1><span class="material-symbols-outlined">table_chart</span> CSV/TSV エディタ</h1>
+      <h1>
+        <span class="material-symbols-outlined">table_chart</span>
+        CSV/TSV エディタ
+        <span id="versionBadge" style="font-size:0.7rem;font-weight:400;color:var(--text-muted);background:var(--header-bg);border:1px solid var(--border);padding:2px 8px;border-radius:999px;vertical-align:middle;"></span>
+      </h1>
       <div class="header-right">
         <div class="stats" id="stats">
           <span>行: <span class="value" id="rowCount">0</span></span>
@@ -809,6 +843,10 @@
           <span>サイズ: <span class="value" id="dataSize">0 KB</span></span>
           <span>形式: <span class="value" id="dataFormat">-</span></span>
         </div>
+        <span title="データはブラウザ外へ送信されません" style="font-size:0.75rem;color:var(--text-muted);display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);white-space:nowrap;">
+          <span class="material-symbols-outlined" style="font-size:1rem;color:var(--success);">lock</span>
+          完全オフライン
+        </span>
         <button class="theme-toggle" id="settingsBtn" title="設定">
           <span class="material-symbols-outlined">settings</span>
         </button>
@@ -964,6 +1002,12 @@
 
   <script src="https://cdn.jsdelivr.net/npm/encoding-japanese@2.2.0/encoding.min.js"></script>
   <script>
+    /* ==============================================================
+       Version
+       ============================================================== */
+    const VERSION = 'v2.0.0';
+    document.getElementById('versionBadge').textContent = VERSION;
+
     /* ==============================================================
        Utility Helpers
        ============================================================== */

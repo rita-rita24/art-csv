@@ -51,6 +51,7 @@
         --text-muted:    light-dark(oklch(0.50 0.02 255),  oklch(0.68 0.005 250));
         --header-bg:     light-dark(oklch(0.96 0.01 250),  oklch(0.20 0.005 250));
         --highlight:     light-dark(oklch(0.93 0.12 95),   oklch(0.40 0.10 60));
+        --cell-focus-bg: light-dark(oklch(0.95 0.06 260), oklch(0.25 0.04 260));
       }
 
       body {
@@ -441,7 +442,7 @@
         outline: none;
 
         &:focus, &.selected {
-          background: light-dark(oklch(0.95 0.06 260), oklch(0.25 0.04 260));
+          background: var(--cell-focus-bg);
           box-shadow: inset 0 0 0 2px var(--primary);
         }
       }
@@ -783,6 +784,61 @@
           accent-color: var(--primary);
           cursor: pointer;
         }
+      }
+
+      /* === Theme Swatches === */
+      .theme-swatches {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .theme-swatch {
+        position: relative;
+        inline-size: 40px;
+        block-size: 40px;
+        border-radius: 50%;
+        border: 3px solid var(--border);
+        cursor: pointer;
+        transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+          transform: scale(1.15);
+          box-shadow: 0 2px 8px oklch(0 0 0 / 0.15);
+        }
+
+        &.active {
+          border-color: var(--text);
+          box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text);
+        }
+
+        &.active::after {
+          content: '';
+          display: block;
+          inline-size: 14px;
+          block-size: 14px;
+          background: #fff;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E") center/contain no-repeat;
+        }
+      }
+
+      .theme-swatch-label {
+        display: block;
+        font-size: 0.7rem;
+        text-align: center;
+        color: var(--text-muted);
+        margin-block-start: 2px;
+        line-height: 1.2;
+      }
+
+      .theme-swatch-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
       }
 
       /* === Info / Help Modal === */
@@ -1145,6 +1201,10 @@
             <option value="dark">ダークモード</option>
           </select>
         </div>
+        <div class="settings-group">
+          <label>アクセントカラー</label>
+          <div class="theme-swatches" id="themeSwatches"></div>
+        </div>
       </div>
       <div class="modal-actions">
         <button class="btn btn-primary" id="settingsCloseBtn">閉じる</button>
@@ -1232,7 +1292,7 @@
     })();
 
     const migrateFromLocalStorage = async () => {
-      const keys = ['csvEditor_theme', 'csvEditor_state'];
+      const keys = ['csvEditor_theme', 'csvEditor_state', 'csvEditor_accent'];
       for (const key of keys) {
         const lsValue = localStorage.getItem(key);
         if (lsValue === null) continue;
@@ -1249,6 +1309,52 @@
     /* ==============================================================
        Theme
        ============================================================== */
+
+    /* --- Accent Color Themes (日本の伝統色) --- */
+    const ACCENT_THEMES = [
+      { id: 'ruri',     name: '瑠璃',   hue: 260, chroma: 0.20, swatch: '#3451B2' },
+      { id: 'beni',     name: '紅',     hue: 15,  chroma: 0.22, swatch: '#C53D43' },
+      { id: 'wakakusa', name: '若草',   hue: 145, chroma: 0.18, swatch: '#3B7960' },
+      { id: 'yamabuki', name: '山吹',   hue: 80,  chroma: 0.18, swatch: '#C4972F' },
+      { id: 'sumire',   name: '菫',     hue: 310, chroma: 0.18, swatch: '#8B4C8B' },
+      { id: 'asagi',    name: '浅葱',   hue: 210, chroma: 0.14, swatch: '#3A7D8C' },
+      { id: 'tobi',     name: '鳶',     hue: 40,  chroma: 0.12, swatch: '#8C5E3C' },
+      { id: 'nezumi',   name: '鼠',     hue: 250, chroma: 0.02, swatch: '#787878' },
+    ];
+
+    let _currentAccentId = 'ruri'; // default
+
+    const applyAccentTheme = (accentId) => {
+      const t = ACCENT_THEMES.find(a => a.id === accentId) ?? ACCENT_THEMES[0];
+      _currentAccentId = t.id;
+      const h = t.hue;
+      const c = t.chroma;
+      const r = document.documentElement;
+      r.style.setProperty('--primary',       `light-dark(oklch(0.55 ${c} ${h}), oklch(0.62 ${c} ${h}))`);
+      r.style.setProperty('--primary-hover',  `light-dark(oklch(0.48 ${Math.min(c + 0.02, 0.30)} ${h}), oklch(0.72 ${Math.max(c - 0.02, 0.04)} ${h}))`);
+      r.style.setProperty('--cell-focus-bg', `light-dark(oklch(0.95 ${Math.min(c * 0.3, 0.08)} ${h}), oklch(0.25 ${Math.min(c * 0.2, 0.05)} ${h}))`);
+
+      // Update swatch active state
+      qsa('.theme-swatch').forEach(el => el.classList.toggle('active', el.dataset.accent === t.id));
+
+      IDBStore.set('csvEditor_accent', t.id).catch(() => {});
+    };
+
+    const buildSwatches = () => {
+      const $container = qs('#themeSwatches');
+      if (!$container) return;
+      $container.innerHTML = ACCENT_THEMES.map(t =>
+        `<div class="theme-swatch-item">
+          <div class="theme-swatch${t.id === _currentAccentId ? ' active' : ''}" data-accent="${t.id}" style="background:${t.swatch};" title="${t.name}"></div>
+          <span class="theme-swatch-label">${t.name}</span>
+        </div>`
+      ).join('');
+      $container.addEventListener('click', (e) => {
+        const $s = e.target.closest('.theme-swatch');
+        if ($s?.dataset.accent) applyAccentTheme($s.dataset.accent);
+      });
+    };
+
     const setTheme = (theme) => {
       document.documentElement.style.colorScheme = theme;
       IDBStore.set('csvEditor_theme', theme).catch(() => {});
@@ -1260,6 +1366,11 @@
       const saved = await IDBStore.get('csvEditor_theme');
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       setTheme(saved ?? (prefersDark ? 'dark' : 'light'));
+
+      const savedAccent = await IDBStore.get('csvEditor_accent');
+      _currentAccentId = savedAccent ?? 'ruri';
+      applyAccentTheme(_currentAccentId);
+      buildSwatches();
     };
 
     /* ==============================================================

@@ -786,6 +786,202 @@
         }
       }
 
+      /* === Import Wizard === */
+      .import-wizard-modal {
+        max-inline-size: 720px;
+        max-block-size: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .import-wizard-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-block-end: 12px;
+
+        & h3 {
+          font-size: 1.15rem;
+          margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+      }
+
+      .wizard-steps {
+        display: flex;
+        gap: 4px;
+        margin-block-end: 16px;
+        background: var(--header-bg);
+        border-radius: 8px;
+        padding: 4px;
+      }
+
+      .wizard-step {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 12px;
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        border-radius: 6px;
+        transition: all 0.2s;
+
+        &.active {
+          background: var(--primary);
+          color: #fff;
+        }
+
+        &.done {
+          color: var(--primary);
+        }
+      }
+
+      .wizard-step-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        inline-size: 20px;
+        block-size: 20px;
+        border-radius: 50%;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border: 1.5px solid currentColor;
+      }
+
+      .wizard-step.active .wizard-step-num {
+        border-color: #fff;
+      }
+
+      .wizard-page {
+        flex: 1;
+        overflow-y: auto;
+        min-block-size: 0;
+      }
+
+      .wizard-detect-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-block-end: 16px;
+      }
+
+      .wizard-detect-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--header-bg);
+        border-radius: 8px;
+        border: 1px solid var(--border);
+
+        & .material-symbols-outlined {
+          font-size: 1.3rem;
+          color: var(--primary);
+        }
+      }
+
+      .wizard-detect-label {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        line-height: 1.2;
+      }
+
+      .wizard-detect-value {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      .wizard-settings {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .wizard-setting-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        & > label:first-child:not(.settings-checkbox) {
+          inline-size: 90px;
+          flex-shrink: 0;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: var(--text);
+        }
+
+        & > .settings-select {
+          flex: 1;
+        }
+      }
+
+      .wizard-preview-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-block-end: 8px;
+        gap: 8px;
+      }
+
+      .wizard-preview-info {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+      }
+
+      .wizard-preview-scroll {
+        max-block-size: 340px;
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+
+      .wizard-preview-table {
+        inline-size: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+      }
+
+      .wizard-preview-table th,
+      .wizard-preview-table td {
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        white-space: nowrap;
+        max-inline-size: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .wizard-preview-table th {
+        background: var(--primary);
+        color: #fff;
+        font-weight: 600;
+        position: sticky;
+        inset-block-start: 0;
+        z-index: 1;
+      }
+
+      .wizard-preview-table th.auto-header {
+        background: var(--header-bg);
+        color: var(--text-muted);
+      }
+
+      .wizard-preview-table tr:nth-child(even) td {
+        background: var(--header-bg);
+      }
+
+      .import-wizard-actions {
+        margin-block-start: 16px;
+        padding-block-start: 12px;
+        border-block-start: 1px solid var(--border);
+      }
+
       /* === Theme Swatches === */
       .theme-swatches {
         display: flex;
@@ -1208,6 +1404,119 @@
       </div>
       <div class="modal-actions">
         <button class="btn btn-primary" id="settingsCloseBtn">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- インポートウィザード -->
+  <div class="modal-overlay" id="importWizardOverlay">
+    <div class="modal import-wizard-modal">
+      <div class="import-wizard-header">
+        <h3>
+          <span class="material-symbols-outlined">upload_file</span>
+          インポートウィザード
+        </h3>
+        <button class="btn" id="importWizardCloseBtn" title="閉じる">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- ステップインジケータ -->
+      <div class="wizard-steps">
+        <div class="wizard-step active" data-step="1"><span class="wizard-step-num">1</span>選択</div>
+        <div class="wizard-step" data-step="2"><span class="wizard-step-num">2</span>判定</div>
+        <div class="wizard-step" data-step="3"><span class="wizard-step-num">3</span>確認</div>
+      </div>
+
+      <!-- ステップ1: 自動判定結果 -->
+      <div class="wizard-page" id="wizardPage1">
+        <div class="wizard-detect-grid">
+          <div class="wizard-detect-item">
+            <span class="material-symbols-outlined">text_fields</span>
+            <div>
+              <div class="wizard-detect-label">文字コード</div>
+              <div class="wizard-detect-value" id="wizDetectEncoding">-</div>
+            </div>
+          </div>
+          <div class="wizard-detect-item">
+            <span class="material-symbols-outlined">view_column</span>
+            <div>
+              <div class="wizard-detect-label">区切り文字</div>
+              <div class="wizard-detect-value" id="wizDetectDelimiter">-</div>
+            </div>
+          </div>
+          <div class="wizard-detect-item">
+            <span class="material-symbols-outlined">grid_on</span>
+            <div>
+              <div class="wizard-detect-label">行数 / 列数</div>
+              <div class="wizard-detect-value" id="wizDetectSize">-</div>
+            </div>
+          </div>
+          <div class="wizard-detect-item">
+            <span class="material-symbols-outlined">data_object</span>
+            <div>
+              <div class="wizard-detect-label">ファイルサイズ</div>
+              <div class="wizard-detect-value" id="wizDetectFileSize">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wizard-settings">
+          <div class="wizard-setting-row">
+            <label>区切り文字</label>
+            <select class="settings-select" id="wizDelimiter">
+              <option value=",">カンマ (,)</option>
+              <option value="&#9;">タブ (\t)</option>
+              <option value=";">セミコロン (;)</option>
+              <option value=" ">スペース</option>
+            </select>
+          </div>
+          <div class="wizard-setting-row">
+            <label>文字コード</label>
+            <select class="settings-select" id="wizEncoding">
+              <option value="utf-8">UTF-8</option>
+              <option value="shift-jis">Shift-JIS</option>
+            </select>
+          </div>
+          <div class="wizard-setting-row">
+            <label class="settings-checkbox">
+              <input type="checkbox" id="wizHeader"> 1行目をヘッダーとして扱う
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ステップ2: プレビュー -->
+      <div class="wizard-page" id="wizardPage2" style="display:none;">
+        <div class="wizard-preview-toolbar">
+          <span class="wizard-preview-info" id="wizPreviewInfo"></span>
+          <select class="settings-select" id="wizPreviewRows" style="inline-size:auto;">
+            <option value="10">10行</option>
+            <option value="20">20行</option>
+            <option value="50">50行</option>
+          </select>
+        </div>
+        <div class="wizard-preview-scroll">
+          <table class="wizard-preview-table" id="wizPreviewTable">
+            <thead id="wizPreviewHead"></thead>
+            <tbody id="wizPreviewBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- フッター -->
+      <div class="modal-actions import-wizard-actions">
+        <button class="btn" id="wizBackBtn" style="display:none;">
+          <span class="material-symbols-outlined">arrow_back</span> 戻る
+        </button>
+        <span style="flex:1;"></span>
+        <button class="btn" id="wizCancelBtn">キャンセル</button>
+        <button class="btn btn-primary" id="wizNextBtn">
+          次へ <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+        <button class="btn btn-primary" id="wizImportBtn" style="display:none;">
+          <span class="material-symbols-outlined">check</span> 読み込む
+        </button>
       </div>
     </div>
   </div>
@@ -1957,14 +2266,18 @@
         return 'txt';
       };
 
-      /* --- File Open --- */
-      const decodeFileBytes = (arrayBuffer) => {
+      /* --- File Open + Import Wizard --- */
+      const decodeFileBytes = (arrayBuffer, encodingHint) => {
         const bytes = new Uint8Array(arrayBuffer);
+        if (encodingHint === 'shift-jis' && typeof Encoding !== 'undefined') {
+          return Encoding.convert(bytes, { to: 'UNICODE', from: 'SJIS', type: 'string' });
+        }
         // Detect BOM
         if (bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) {
           return new TextDecoder('utf-8').decode(bytes.slice(3));
         }
-        // Try Shift-JIS detection via encoding-japanese
+        if (encodingHint === 'utf-8') return new TextDecoder('utf-8').decode(bytes);
+        // Auto-detect via encoding-japanese
         if (typeof Encoding !== 'undefined') {
           const detected = Encoding.detect(bytes);
           if (detected && detected !== 'UTF8' && detected !== 'ASCII') {
@@ -1974,16 +2287,160 @@
         return new TextDecoder('utf-8').decode(bytes);
       };
 
-      const loadFileContent = (arrayBuffer, fileName) => {
-        const text = decodeFileBytes(arrayBuffer);
-        if (!text.trim()) { showToast('ファイルが空です', 'error'); return; }
-        processData(text);
-        updateFilenameBadge(fileName);
-        showToast(`<span class="material-symbols-outlined">folder_open</span> ${escapeHTML(fileName)} を開きました`, 'success');
+      const detectEncodingLabel = (arrayBuffer) => {
+        const bytes = new Uint8Array(arrayBuffer);
+        if (bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) return 'utf-8';
+        if (typeof Encoding !== 'undefined') {
+          const detected = Encoding.detect(bytes);
+          if (detected === 'SJIS' || detected === 'EUCJP') return 'shift-jis';
+        }
+        return 'utf-8';
       };
 
+      /* --- Import Wizard State --- */
+      const $wizOverlay    = qs('#importWizardOverlay');
+      const $wizPage1      = qs('#wizardPage1');
+      const $wizPage2      = qs('#wizardPage2');
+      const $wizBackBtn    = qs('#wizBackBtn');
+      const $wizNextBtn    = qs('#wizNextBtn');
+      const $wizImportBtn  = qs('#wizImportBtn');
+      const $wizCancelBtn  = qs('#wizCancelBtn');
+      const $wizCloseBtn   = qs('#importWizardCloseBtn');
+      let _wizStep = 1;
+      let _wizArrayBuffer = null;
+      let _wizFileName = '';
+      let _wizFileHandle = null;
+
+      const delimiterDisplayName = (d) => {
+        if (d === ',') return 'カンマ (,)';
+        if (d === '\t') return 'タブ';
+        if (d === ';') return 'セミコロン (;)';
+        if (d === ' ') return 'スペース';
+        return d;
+      };
+
+      const formatFileSize = (bytes) => {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+      };
+
+      const wizSetStep = (step) => {
+        _wizStep = step;
+        qsa('.wizard-step').forEach(el => {
+          const s = parseInt(el.dataset.step);
+          el.classList.toggle('active', s === step);
+          el.classList.toggle('done', s < step);
+        });
+        $wizPage1.style.display = step === 1 ? '' : 'none';
+        $wizPage2.style.display = step === 2 ? '' : 'none';
+        $wizBackBtn.style.display = step > 1 ? '' : 'none';
+        $wizNextBtn.style.display = step === 1 ? '' : 'none';
+        $wizImportBtn.style.display = step === 2 ? '' : 'none';
+      };
+
+      const wizGetCurrentText = () => {
+        const enc = qs('#wizEncoding').value;
+        return decodeFileBytes(_wizArrayBuffer, enc);
+      };
+
+      const wizGetCurrentDelimiter = () => qs('#wizDelimiter').value;
+
+      const wizRenderPreview = () => {
+        const text = wizGetCurrentText();
+        const dlm = wizGetCurrentDelimiter();
+        const parsed = parseCSV(text, dlm);
+        const hasHdr = qs('#wizHeader').checked;
+        const maxRows = parseInt(qs('#wizPreviewRows').value) || 10;
+
+        const colCount = parsed[0]?.length ?? 0;
+        const dataStart = hasHdr ? 1 : 0;
+        const headers = hasHdr ? parsed[0] : Array.from({ length: colCount }, (_, i) => `列${i + 1}`);
+        const previewRows = parsed.slice(dataStart, dataStart + maxRows);
+        const totalDataRows = parsed.length - dataStart;
+
+        qs('#wizPreviewInfo').textContent = `全 ${totalDataRows.toLocaleString()} 行 × ${colCount} 列のうち先頭 ${Math.min(maxRows, previewRows.length)} 行を表示`;
+
+        const thClass = hasHdr ? '' : ' class="auto-header"';
+        qs('#wizPreviewHead').innerHTML = `<tr>${headers.map(h => `<th${thClass}>${escapeHTML(h)}</th>`).join('')}</tr>`;
+        qs('#wizPreviewBody').innerHTML = previewRows.map(row =>
+          `<tr>${row.map(c => `<td>${escapeHTML(c)}</td>`).join('')}</tr>`
+        ).join('');
+      };
+
+      const openImportWizard = (arrayBuffer, fileName, fileHandle) => {
+        _wizArrayBuffer = arrayBuffer;
+        _wizFileName = fileName;
+        _wizFileHandle = fileHandle;
+
+        // Step1: auto-detect
+        const detectedEnc = detectEncodingLabel(arrayBuffer);
+        const text = decodeFileBytes(arrayBuffer, detectedEnc);
+        const detectedDlm = detectDelimiter(text);
+        const parsed = parseCSV(text, detectedDlm);
+        const colCount = parsed[0]?.length ?? 0;
+
+        // Populate detect info
+        qs('#wizDetectEncoding').textContent = detectedEnc === 'utf-8' ? 'UTF-8' : 'Shift-JIS';
+        qs('#wizDetectDelimiter').textContent = delimiterDisplayName(detectedDlm);
+        qs('#wizDetectSize').textContent = `${parsed.length.toLocaleString()} 行 × ${colCount} 列`;
+        qs('#wizDetectFileSize').textContent = formatFileSize(arrayBuffer.byteLength);
+
+        // Set controls to detected values
+        qs('#wizEncoding').value = detectedEnc;
+        qs('#wizDelimiter').value = detectedDlm;
+        qs('#wizHeader').checked = false;
+
+        wizSetStep(1);
+        $wizOverlay.classList.add('show');
+      };
+
+      const closeImportWizard = () => {
+        $wizOverlay.classList.remove('show');
+        _wizArrayBuffer = null;
+      };
+
+      const wizExecuteImport = () => {
+        const text = wizGetCurrentText();
+        const dlm = wizGetCurrentDelimiter();
+        const hasHdr = qs('#wizHeader').checked;
+
+        if (!text.trim()) { showToast('ファイルが空です', 'error'); return; }
+
+        state.originalText = text;
+        state.delimiter = dlm;
+        state.data = parseCSV(text, dlm);
+        if (state.data.length === 0) { showToast('データを解析できませんでした', 'error'); return; }
+        state.hasHeader = hasHdr;
+        state.columnWidths = {};
+        state.encoding = qs('#wizEncoding').value;
+        undoStack = []; redoStack = [];
+        _fileHandle = _wizFileHandle;
+        updateFilenameBadge(_wizFileName);
+        updateHistoryButtons(); renderTable(); updateStats(); updateButtonLabels(); saveToStorage();
+        closeImportWizard();
+        showToast(`<span class="material-symbols-outlined">folder_open</span> ${escapeHTML(_wizFileName)} を読み込みました（${state.data.length}行）`, 'success');
+      };
+
+      // Wizard event listeners
+      $wizNextBtn.addEventListener('click', () => {
+        wizSetStep(2);
+        wizRenderPreview();
+      });
+      $wizBackBtn.addEventListener('click', () => wizSetStep(_wizStep - 1));
+      $wizImportBtn.addEventListener('click', wizExecuteImport);
+      $wizCancelBtn.addEventListener('click', closeImportWizard);
+      $wizCloseBtn.addEventListener('click', closeImportWizard);
+      $wizOverlay.addEventListener('click', (e) => { if (e.target === $wizOverlay) closeImportWizard(); });
+
+      // Re-render preview when settings change on page 2
+      qs('#wizDelimiter').addEventListener('change', () => { if (_wizStep === 2) wizRenderPreview(); });
+      qs('#wizEncoding').addEventListener('change', () => { if (_wizStep === 2) wizRenderPreview(); });
+      qs('#wizHeader').addEventListener('change', () => { if (_wizStep === 2) wizRenderPreview(); });
+      qs('#wizPreviewRows').addEventListener('change', () => { if (_wizStep === 2) wizRenderPreview(); });
+
+      /* --- openFile: now routes to wizard --- */
       const openFile = async () => {
-        // File System Access API (Chrome/Edge)
         if (window.showOpenFilePicker) {
           try {
             const [handle] = await window.showOpenFilePicker({
@@ -1993,10 +2450,9 @@
               }],
               multiple: false
             });
-            _fileHandle = handle;
             const file = await handle.getFile();
             const buf = await file.arrayBuffer();
-            loadFileContent(buf, file.name);
+            openImportWizard(buf, file.name, handle);
           } catch (e) {
             if (e.name !== 'AbortError') showToast('ファイルを開けませんでした', 'error');
           }
@@ -2009,9 +2465,8 @@
         input.addEventListener('change', async () => {
           const file = input.files?.[0];
           if (!file) return;
-          _fileHandle = null;
           const buf = await file.arrayBuffer();
-          loadFileContent(buf, file.name);
+          openImportWizard(buf, file.name, null);
         });
         input.click();
       };
@@ -2172,7 +2627,7 @@
         if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
         if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); return; }
         if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); $searchInput.focus(); return; }
-        if (e.key === 'Escape') { clearSearch(); qs('#settingsOverlay')?.classList.remove('show'); qs('#infoOverlay')?.classList.remove('show'); return; }
+        if (e.key === 'Escape') { clearSearch(); qs('#settingsOverlay')?.classList.remove('show'); qs('#infoOverlay')?.classList.remove('show'); closeImportWizard(); return; }
         if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
           const tag = document.activeElement.tagName;
           const editable = document.activeElement.isContentEditable;

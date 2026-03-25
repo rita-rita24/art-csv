@@ -417,6 +417,7 @@
       }
 
       tr.filtered-out { display: none; }
+      tr.col-filtered-out { display: none; }
 
       /* === Paste Zone === */
       .paste-area {
@@ -702,6 +703,197 @@
         background: var(--border);
         margin-block: 4px;
       }
+
+      /* === Column Filter Panel === */
+      .col-filter-panel {
+        display: none;
+        position: absolute;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: 0 10px 40px oklch(0 0 0 / 0.18);
+        z-index: 1001;
+        inline-size: 340px;
+        max-block-size: 520px;
+        overflow: hidden;
+        flex-direction: column;
+
+        &.show {
+          display: flex;
+        }
+      }
+
+      .col-filter-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-block-end: 1px solid var(--border);
+        background: var(--header-bg);
+      }
+
+      .col-filter-title {
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      .col-filter-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-muted);
+        padding: 2px;
+        border-radius: 4px;
+        display: flex;
+        &:hover { background: var(--border); color: var(--text); }
+      }
+
+      .col-filter-section {
+        padding: 12px 16px;
+        border-block-end: 1px solid var(--border);
+      }
+
+      .col-filter-section-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-block-end: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+
+      .col-filter-search {
+        inline-size: 100%;
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 0.85rem;
+        background: var(--bg);
+        color: var(--text);
+        margin-block-end: 8px;
+        box-sizing: border-box;
+        &:focus { outline: none; border-color: var(--primary); }
+      }
+
+      .col-filter-values {
+        max-block-size: 160px;
+        overflow-y: auto;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg);
+      }
+
+      .col-filter-value-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 10px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        &:hover { background: var(--header-bg); }
+
+        & input[type="checkbox"] { accent-color: var(--primary); flex-shrink: 0; }
+        & .cfv-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        & .cfv-count { font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0; }
+      }
+
+      .col-filter-values-actions {
+        display: flex;
+        gap: 8px;
+        margin-block-start: 6px;
+      }
+
+      .col-filter-conditions {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .col-filter-condition {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+
+        & select {
+          flex: 0 0 auto;
+          inline-size: 120px;
+          padding: 4px 6px;
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          font-size: 0.82rem;
+          background: var(--bg);
+          color: var(--text);
+        }
+        & input {
+          flex: 1;
+          padding: 4px 8px;
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          font-size: 0.82rem;
+          background: var(--bg);
+          color: var(--text);
+          min-inline-size: 0;
+          &:focus { outline: none; border-color: var(--primary); }
+        }
+        & .col-filter-cond-remove {
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: var(--text-muted);
+          padding: 2px;
+          border-radius: 4px;
+          display: flex;
+          font-size: 0.9rem;
+          &:hover { color: var(--danger); }
+        }
+      }
+
+      .col-filter-cond-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-block-start: 8px;
+      }
+
+      .col-filter-logic {
+        display: flex;
+        gap: 12px;
+        font-size: 0.82rem;
+        & label { display: flex; align-items: center; gap: 3px; cursor: pointer; }
+        & input[type="radio"] { accent-color: var(--primary); }
+      }
+
+      .col-filter-footer {
+        display: flex;
+        gap: 8px;
+        padding: 12px 16px;
+        justify-content: flex-end;
+      }
+
+      .btn-primary {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border-color: var(--primary) !important;
+        &:hover { filter: brightness(1.1); }
+      }
+
+      .btn-sm {
+        font-size: 0.8rem !important;
+        padding: 4px 10px !important;
+      }
+
+      /* Filter icon in header */
+      .th-filter-btn {
+        padding: 2px;
+        border-radius: 4px;
+        opacity: 0.3;
+        transition: opacity 0.15s;
+        font-size: 1rem !important;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      th:hover .th-filter-btn { opacity: 0.7; }
+      .th-filter-btn.has-filter { opacity: 1; color: var(--primary); }
 
       /* === Toast === */
       .toast-container {
@@ -1377,10 +1569,65 @@
     <div class="menu-item" data-action="sort-asc"><span class="material-symbols-outlined">arrow_upward</span> 昇順に並び替え</div>
     <div class="menu-item" data-action="sort-desc"><span class="material-symbols-outlined">arrow_downward</span> 降順に並び替え</div>
     <div class="menu-divider"></div>
+    <div class="menu-item" data-action="open-filter"><span class="material-symbols-outlined">filter_alt</span> フィルタ...</div>
+    <div class="menu-divider"></div>
     <div class="menu-item" data-action="copy-col"><span class="material-symbols-outlined">content_copy</span> 列をコピー</div>
     <div class="menu-item" data-action="dup-col"><span class="material-symbols-outlined">content_copy</span> 列を複製</div>
     <div class="menu-divider"></div>
     <div class="menu-item danger" data-action="del-col"><span class="material-symbols-outlined">delete</span> 列を削除</div>
+  </div>
+
+  <!-- 列フィルタパネル -->
+  <div class="col-filter-panel" id="colFilterPanel">
+    <div class="col-filter-header">
+      <span class="col-filter-title" id="colFilterTitle">列フィルタ</span>
+      <button class="col-filter-close" id="colFilterClose"><span class="material-symbols-outlined">close</span></button>
+    </div>
+
+    <!-- 値一覧セクション -->
+    <div class="col-filter-section">
+      <div class="col-filter-section-title">値で絞り込み</div>
+      <input type="text" class="col-filter-search" id="colFilterSearch" placeholder="値を検索...">
+      <div class="col-filter-values" id="colFilterValues"></div>
+      <div class="col-filter-values-actions">
+        <button class="btn btn-sm" id="colFilterSelectAll">すべて選択</button>
+        <button class="btn btn-sm" id="colFilterSelectNone">すべて解除</button>
+      </div>
+    </div>
+
+    <!-- 条件フィルタセクション -->
+    <div class="col-filter-section">
+      <div class="col-filter-section-title">条件で絞り込み</div>
+      <div class="col-filter-conditions" id="colFilterConditions">
+        <div class="col-filter-condition" data-cond-idx="0">
+          <select class="col-filter-op">
+            <option value="">（なし）</option>
+            <option value="contains">含む</option>
+            <option value="not_contains">含まない</option>
+            <option value="equals">等しい</option>
+            <option value="not_equals">等しくない</option>
+            <option value="gte">以上</option>
+            <option value="lte">以下</option>
+            <option value="empty">空</option>
+            <option value="not_empty">非空</option>
+          </select>
+          <input type="text" class="col-filter-cond-val" placeholder="値...">
+        </div>
+      </div>
+      <div class="col-filter-cond-actions">
+        <div class="col-filter-logic">
+          <label><input type="radio" name="colFilterLogic" value="and" checked> AND</label>
+          <label><input type="radio" name="colFilterLogic" value="or"> OR</label>
+        </div>
+        <button class="btn btn-sm" id="colFilterAddCond"><span class="material-symbols-outlined" style="font-size:1rem;">add</span> 条件追加</button>
+      </div>
+    </div>
+
+    <!-- アクションボタン -->
+    <div class="col-filter-footer">
+      <button class="btn" id="colFilterClearBtn"><span class="material-symbols-outlined">filter_alt_off</span> フィルタ解除</button>
+      <button class="btn btn-primary" id="colFilterApplyBtn"><span class="material-symbols-outlined">filter_alt</span> 絞り込む</button>
+    </div>
   </div>
 
   <!-- 行メニュー -->
@@ -1878,6 +2125,8 @@
       let searchHistory = [];
       const MAX_SEARCH_HISTORY = 20;
       let filteredRows = null; // Set<rowIndex> when filter mode is active, null when inactive
+      const columnFilters = new Map(); // Map<colIndex, {values?: Set, conditions?: [{op, val}], logic?: 'and'|'or'}>
+      let filterPanelColIndex = -1;
       let isResizing = false, resizeColumnIndex = -1, resizeStartX = 0, resizeStartWidth = 0;
 
       /* --- File Handle (File System Access API) --- */
@@ -2031,9 +2280,11 @@
             const w = state.columnWidths[i] ?? 150;
             const colNum = state.hasHeader ? `<span class="th-colnum">${i + 1}</span>` : '';
             const style = state.hasHeader ? '' : 'color:var(--text-muted);';
+            const hasFilter = columnFilters.has(i);
             return `<th style="width:${w}px;min-width:${w}px;" data-col="${i}">
               <div class="th-wrapper">
                 <div class="th-content">${colNum}<span class="th-text" style="${style}">${escapeHTML(h)}</span>
+                  <span class="th-filter-btn material-symbols-outlined${hasFilter ? ' has-filter' : ''}" data-filter-col="${i}" title="フィルタ">filter_alt</span>
                   <span class="th-menu-btn material-symbols-outlined" style="font-size:1.1rem;">more_vert</span>
                 </div>
                 <div class="resize-handle" data-resize-col="${i}"></div>
@@ -2061,6 +2312,7 @@
         const $sh = qs('#settingHeader');
         if ($sh) $sh.checked = state.hasHeader;
         updateSearchTargetCols();
+        applyColumnFilters();
         performSearch();
       };
 
@@ -2561,6 +2813,248 @@
         showToast(`${count}件置換しました`, 'success');
       };
 
+      /* --- Column Filter Panel --- */
+      const $colFilterPanel = qs('#colFilterPanel');
+      const $colFilterTitle = qs('#colFilterTitle');
+      const $colFilterSearch = qs('#colFilterSearch');
+      const $colFilterValues = qs('#colFilterValues');
+      const $colFilterConditions = qs('#colFilterConditions');
+
+      const openColFilterPanel = (colIdx, anchorRect) => {
+        filterPanelColIndex = colIdx;
+        closeColumnMenu();
+
+        const colName = state.hasHeader ? state.data[0][colIdx] : `列${colIdx + 1}`;
+        $colFilterTitle.textContent = `「${colName}」のフィルタ`;
+
+        // Populate values list
+        populateFilterValues(colIdx);
+
+        // Restore conditions if filter exists
+        restoreFilterConditions(colIdx);
+
+        // Position the panel
+        $colFilterPanel.style.top = `${anchorRect.bottom + window.scrollY + 4}px`;
+        $colFilterPanel.style.left = `${Math.min(anchorRect.left, window.innerWidth - 360)}px`;
+        $colFilterPanel.classList.add('show');
+        $colFilterSearch.value = '';
+        $colFilterSearch.focus();
+      };
+
+      const closeColFilterPanel = () => {
+        $colFilterPanel.classList.remove('show');
+        filterPanelColIndex = -1;
+      };
+
+      const populateFilterValues = (colIdx) => {
+        const start = state.hasHeader ? 1 : 0;
+        const valueCounts = new Map();
+        for (let i = start; i < state.data.length; i++) {
+          const v = state.data[i][colIdx] ?? '';
+          valueCounts.set(v, (valueCounts.get(v) ?? 0) + 1);
+        }
+
+        // Sort: empty first, then alphabetical
+        const sorted = [...valueCounts.entries()].sort((a, b) => {
+          if (a[0] === '' && b[0] !== '') return -1;
+          if (a[0] !== '' && b[0] === '') return 1;
+          return a[0].localeCompare(b[0], 'ja');
+        });
+
+        // Determine which values are currently checked
+        const existingFilter = columnFilters.get(colIdx);
+        const checkedValues = existingFilter?.values;
+
+        $colFilterValues.innerHTML = sorted.map(([val, count]) => {
+          const checked = checkedValues ? checkedValues.has(val) : true;
+          const display = val === '' ? '<em>（空）</em>' : escapeHTML(val);
+          return `<label class="col-filter-value-item" data-value="${escapeHTML(val)}">
+            <input type="checkbox" ${checked ? 'checked' : ''} data-filter-value="${escapeHTML(val)}">
+            <span class="cfv-label">${display}</span>
+            <span class="cfv-count">${count}</span>
+          </label>`;
+        }).join('');
+      };
+
+      const restoreFilterConditions = (colIdx) => {
+        const existing = columnFilters.get(colIdx);
+        $colFilterConditions.innerHTML = '';
+
+        if (existing?.conditions?.length) {
+          existing.conditions.forEach((c, idx) => addConditionRow(c.op, c.val));
+          // Restore logic
+          const logic = existing.logic ?? 'and';
+          const $radio = qs(`input[name="colFilterLogic"][value="${logic}"]`);
+          if ($radio) $radio.checked = true;
+        } else {
+          addConditionRow('', '');
+        }
+      };
+
+      const addConditionRow = (op = '', val = '') => {
+        const idx = $colFilterConditions.children.length;
+        const $row = document.createElement('div');
+        $row.className = 'col-filter-condition';
+        $row.dataset.condIdx = idx;
+        const needsValue = !['empty', 'not_empty', ''].includes(op);
+        $row.innerHTML = `
+          <select class="col-filter-op">
+            <option value="" ${op === '' ? 'selected' : ''}>（なし）</option>
+            <option value="contains" ${op === 'contains' ? 'selected' : ''}>含む</option>
+            <option value="not_contains" ${op === 'not_contains' ? 'selected' : ''}>含まない</option>
+            <option value="equals" ${op === 'equals' ? 'selected' : ''}>等しい</option>
+            <option value="not_equals" ${op === 'not_equals' ? 'selected' : ''}>等しくない</option>
+            <option value="gte" ${op === 'gte' ? 'selected' : ''}>以上</option>
+            <option value="lte" ${op === 'lte' ? 'selected' : ''}>以下</option>
+            <option value="empty" ${op === 'empty' ? 'selected' : ''}>空</option>
+            <option value="not_empty" ${op === 'not_empty' ? 'selected' : ''}>非空</option>
+          </select>
+          <input type="text" class="col-filter-cond-val" placeholder="値..." value="${escapeHTML(val)}" ${needsValue ? '' : 'style="display:none;"'}>
+          ${idx > 0 ? '<button class="col-filter-cond-remove" title="削除"><span class="material-symbols-outlined" style="font-size:1rem;">close</span></button>' : ''}
+        `;
+        // Toggle value input visibility based on operator
+        qs('.col-filter-op', $row).addEventListener('change', (e) => {
+          const hide = ['empty', 'not_empty', ''].includes(e.target.value);
+          qs('.col-filter-cond-val', $row).style.display = hide ? 'none' : '';
+        });
+        // Remove button
+        const $rem = qs('.col-filter-cond-remove', $row);
+        if ($rem) $rem.addEventListener('click', () => $row.remove());
+        $colFilterConditions.appendChild($row);
+      };
+
+      // Evaluate a single condition against a cell value
+      const evalCondition = (cellVal, op, condVal) => {
+        switch (op) {
+          case 'contains': return cellVal.toLowerCase().includes(condVal.toLowerCase());
+          case 'not_contains': return !cellVal.toLowerCase().includes(condVal.toLowerCase());
+          case 'equals': return cellVal === condVal;
+          case 'not_equals': return cellVal !== condVal;
+          case 'gte': {
+            const nC = parseFloat(cellVal), nV = parseFloat(condVal);
+            return !isNaN(nC) && !isNaN(nV) ? nC >= nV : cellVal >= condVal;
+          }
+          case 'lte': {
+            const nC = parseFloat(cellVal), nV = parseFloat(condVal);
+            return !isNaN(nC) && !isNaN(nV) ? nC <= nV : cellVal <= condVal;
+          }
+          case 'empty': return cellVal === '';
+          case 'not_empty': return cellVal !== '';
+          default: return true;
+        }
+      };
+
+      // Collect filter config from the panel UI
+      const collectFilterConfig = () => {
+        // Values
+        const $checks = qsa('input[data-filter-value]', $colFilterValues);
+        const allChecked = [...$checks].every(c => c.checked);
+        const noneChecked = [...$checks].every(c => !c.checked);
+        let values = null;
+        if (!allChecked && !noneChecked) {
+          values = new Set();
+          $checks.forEach($c => { if ($c.checked) values.add($c.dataset.filterValue); });
+        }
+
+        // Conditions
+        const conditions = [];
+        qsa('.col-filter-condition', $colFilterConditions).forEach($row => {
+          const op = qs('.col-filter-op', $row).value;
+          const val = qs('.col-filter-cond-val', $row).value;
+          if (op) conditions.push({ op, val });
+        });
+
+        const logic = qs('input[name="colFilterLogic"]:checked')?.value ?? 'and';
+
+        return { values, conditions, logic };
+      };
+
+      // Apply filter for a specific column
+      const applyColumnFilter = () => {
+        const colIdx = filterPanelColIndex;
+        if (colIdx < 0) return;
+
+        const config = collectFilterConfig();
+        const hasValues = config.values !== null;
+        const hasConds = config.conditions.length > 0;
+
+        if (!hasValues && !hasConds) {
+          columnFilters.delete(colIdx);
+        } else {
+          columnFilters.set(colIdx, config);
+        }
+
+        applyColumnFilters();
+        renderTable();
+        closeColFilterPanel();
+        const active = columnFilters.size;
+        if (active > 0) {
+          showToast(`<span class="material-symbols-outlined">filter_alt</span> フィルタ適用中（${active}列）`, 'success');
+        }
+      };
+
+      const clearColumnFilter = (colIdx) => {
+        if (colIdx === undefined) colIdx = filterPanelColIndex;
+        columnFilters.delete(colIdx);
+        applyColumnFilters();
+        renderTable();
+        closeColFilterPanel();
+        showToast(`<span class="material-symbols-outlined">filter_alt_off</span> フィルタを解除しました`, 'success');
+      };
+
+      // Apply all column filters to the table rows
+      const applyColumnFilters = () => {
+        if (columnFilters.size === 0) {
+          // Remove all col-filtered-out classes
+          qsa('tr.col-filtered-out', $dataTable).forEach($tr => $tr.classList.remove('col-filtered-out'));
+          return;
+        }
+
+        const start = state.hasHeader ? 1 : 0;
+        qsa('tr[data-row]', $dataTable).forEach($tr => {
+          const rowIdx = parseInt($tr.dataset.row);
+          if (rowIdx < start) return;
+
+          let pass = true;
+          for (const [colIdx, config] of columnFilters) {
+            const cellVal = state.data[rowIdx]?.[colIdx] ?? '';
+
+            // Check value filter
+            if (config.values && !config.values.has(cellVal)) {
+              pass = false;
+              break;
+            }
+
+            // Check conditions
+            if (config.conditions.length > 0) {
+              const results = config.conditions.map(c => evalCondition(cellVal, c.op, c.val));
+              const condPass = config.logic === 'and'
+                ? results.every(Boolean)
+                : results.some(Boolean);
+              if (!condPass) {
+                pass = false;
+                break;
+              }
+            }
+          }
+
+          if (pass) {
+            $tr.classList.remove('col-filtered-out');
+          } else {
+            $tr.classList.add('col-filtered-out');
+          }
+        });
+      };
+
+      // Value search within filter panel
+      const filterValueList = () => {
+        const query = $colFilterSearch.value.toLowerCase();
+        qsa('.col-filter-value-item', $colFilterValues).forEach($item => {
+          const val = $item.dataset.value.toLowerCase();
+          $item.style.display = val.includes(query) || (val === '' && '（空）'.includes(query)) ? '' : 'none';
+        });
+      };
+
       /* --- Column Menu --- */
       const closeColumnMenu = () => $columnMenu.classList.remove('show');
       const closeRowMenu    = () => $rowMenu.classList.remove('show');
@@ -3046,6 +3540,10 @@
       const colActions = {
         'sort-asc':  () => sortColumn('asc'),
         'sort-desc': () => sortColumn('desc'),
+        'open-filter': () => {
+          const $th = qs(`th[data-col="${activeColumnIndex}"]`, $dataTable);
+          if ($th) openColFilterPanel(activeColumnIndex, $th.getBoundingClientRect());
+        },
         'copy-col':  copyColumn,
         'dup-col':   duplicateColumn,
         'del-col':   confirmDeleteColumn,
@@ -3069,6 +3567,14 @@
 
       /* --- Table Event Delegation --- */
       $dataTable.addEventListener('click', (e) => {
+        // Filter icon click
+        const $fb = e.target.closest('.th-filter-btn');
+        if ($fb) {
+          e.stopPropagation();
+          const ci = parseInt($fb.dataset.filterCol);
+          if (!isNaN(ci)) openColFilterPanel(ci, $fb.closest('th').getBoundingClientRect());
+          return;
+        }
         const $th = e.target.closest('.th-content');
         if ($th) { const ci = parseInt($th.closest('th').dataset.col); if (!isNaN(ci)) openColumnMenu(e, ci); return; }
         const $rm = e.target.closest('[data-row-menu]');
@@ -3250,6 +3756,29 @@
         $filterMode.checked = false;
         clearFilter();
         updateSearchInfo();
+      });
+
+      // --- Column Filter Panel Events ---
+      qs('#colFilterClose').addEventListener('click', closeColFilterPanel);
+      qs('#colFilterApplyBtn').addEventListener('click', applyColumnFilter);
+      qs('#colFilterClearBtn').addEventListener('click', () => clearColumnFilter());
+      qs('#colFilterAddCond').addEventListener('click', () => addConditionRow());
+      qs('#colFilterSelectAll').addEventListener('click', () => {
+        qsa('input[data-filter-value]', $colFilterValues).forEach(c => c.checked = true);
+      });
+      qs('#colFilterSelectNone').addEventListener('click', () => {
+        qsa('input[data-filter-value]', $colFilterValues).forEach(c => c.checked = false);
+      });
+      $colFilterSearch.addEventListener('input', filterValueList);
+
+      // Close filter panel on outside click
+      document.addEventListener('click', (e) => {
+        if ($colFilterPanel.classList.contains('show') &&
+            !$colFilterPanel.contains(e.target) &&
+            !e.target.closest('.th-filter-btn') &&
+            !e.target.closest('[data-action="open-filter"]')) {
+          closeColFilterPanel();
+        }
       });
 
       /* --- Button Labels --- */

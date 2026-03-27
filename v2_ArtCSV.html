@@ -751,6 +751,9 @@
       .col-filter-section {
         padding: 12px 16px;
         border-block-end: 1px solid var(--border);
+        overflow-y: auto;
+        flex-shrink: 1;
+        min-block-size: 0;
       }
 
       .col-filter-section-title {
@@ -868,6 +871,8 @@
         gap: 8px;
         padding: 12px 16px;
         justify-content: flex-end;
+        border-block-start: 1px solid var(--border);
+        margin-block-start: auto;
       }
 
       .btn-primary {
@@ -1018,6 +1023,7 @@
         margin-block-start: 12px;
         border-block-start: 1px solid var(--border);
         padding-block-start: 12px;
+        margin-block-end: 16px;
       }
 
       .export-preview-header {
@@ -1565,15 +1571,13 @@
         <label class="search-option"><input type="checkbox" id="searchCaseSensitive"><span>大文字小文字を区別</span></label>
         <label class="search-option"><input type="checkbox" id="searchExactMatch"><span>完全一致</span></label>
         <label class="search-option"><input type="checkbox" id="searchRegex"><span>正規表現</span></label>
+        <label class="search-option"><input type="checkbox" id="filterMode"><span>フィルタ（該当行のみ表示）</span></label>
         <div class="search-option-group">
           <label>対象列:</label>
           <select id="searchTargetCol">
             <option value="-1">すべて</option>
           </select>
         </div>
-        <div class="search-separator"></div>
-        <label class="search-option"><input type="checkbox" id="filterMode"><span>フィルタ（該当行のみ表示）</span></label>
-        <button class="btn btn-sm" id="clearFilterBtn">フィルタ解除</button>
       </div>
     </div>
 
@@ -1595,7 +1599,7 @@
       <div class="toolbar-group">
         <button class="btn" id="copyBtn" title="コピー"><span class="material-symbols-outlined">content_copy</span> <span id="copyBtnLabel">CSVコピー</span></button>
         <button class="btn" id="dlBtn" title="名前を付けて保存"><span class="material-symbols-outlined">download</span> <span id="dlBtnLabel">CSV保存</span></button>
-        <button class="btn" id="exportWizardBtn" title="エクスポートウィザード"><span class="material-symbols-outlined">tune</span> エクスポート</button>
+        <button class="btn" id="exportWizardBtn" title="エクスポート"><span class="material-symbols-outlined">tune</span> エクスポート</button>
       </div>
       <div class="toolbar-group ml-auto">
         <button class="btn btn-danger" id="clearBtn" title="すべてクリア"><span class="material-symbols-outlined">delete</span> クリア</button>
@@ -1825,10 +1829,10 @@
     </div>
   </div>
 
-  <!-- エクスポートウィザード -->
+  <!-- エクスポート -->
   <div class="modal-overlay" id="exportWizardOverlay">
     <div class="modal export-wizard-modal">
-      <h3><span class="material-symbols-outlined">tune</span> エクスポートウィザード</h3>
+      <h3><span class="material-symbols-outlined">tune</span> エクスポート</h3>
       <div class="export-wizard-grid">
 
         <!-- 形式 -->
@@ -2692,29 +2696,25 @@
       };
 
       // --- Bulk input: type a value into all selected cells ---
+      let _bulkInputBuffer = '';
+      let _bulkInputTimer = null;
       const bulkInputToSelection = (char) => {
         const cells = getSelectedCells();
         if (cells.length < 2) return false;
-        saveToHistory();
+        if (!_bulkInputBuffer) saveToHistory();
+        _bulkInputBuffer += char;
+        const value = _bulkInputBuffer;
         cells.forEach($td => {
           const { row, col } = getCellCoords($td);
           if (state.data[row]) {
-            state.data[row][col] = char;
-            $td.textContent = char;
+            state.data[row][col] = value;
+            $td.textContent = value;
           }
         });
-        // Focus first selected cell for continued editing
-        const first = cells[0];
-        clearSelection();
-        first.focus();
-        // Place caret at end
-        const range = document.createRange();
-        const sel = window.getSelection();
-        range.selectNodeContents(first);
-        range.collapse(false);
-        sel.removeAllRanges();
-        sel.addRange(range);
         updateStats(); saveToStorage();
+        // Reset buffer after a pause in typing
+        if (_bulkInputTimer) clearTimeout(_bulkInputTimer);
+        _bulkInputTimer = setTimeout(() => { _bulkInputBuffer = ''; _bulkInputTimer = null; }, 1000);
         return true;
       };
 
@@ -3453,11 +3453,11 @@
           el.classList.toggle('active', s === step);
           el.classList.toggle('done', s < step);
         });
-        $wizPage1.style.display = step === 1 ? '' : 'none';
-        $wizPage2.style.display = step === 2 ? '' : 'none';
-        $wizBackBtn.style.display = step > 1 ? '' : 'none';
-        $wizNextBtn.style.display = step === 1 ? '' : 'none';
-        $wizImportBtn.style.display = step === 2 ? '' : 'none';
+        $wizPage1.style.display = step === 2 ? '' : 'none';
+        $wizPage2.style.display = step === 3 ? '' : 'none';
+        $wizBackBtn.style.display = step > 2 ? '' : 'none';
+        $wizNextBtn.style.display = step === 2 ? '' : 'none';
+        $wizImportBtn.style.display = step === 3 ? '' : 'none';
       };
 
       const wizGetCurrentText = () => {
@@ -3512,7 +3512,7 @@
         qs('#wizDelimiter').value = detectedDlm;
         qs('#wizHeader').checked = false;
 
-        wizSetStep(1);
+        wizSetStep(2);
         $wizOverlay.classList.add('show');
       };
 
@@ -3545,7 +3545,7 @@
 
       // Wizard event listeners
       $wizNextBtn.addEventListener('click', () => {
-        wizSetStep(2);
+        wizSetStep(3);
         wizRenderPreview();
       });
       $wizBackBtn.addEventListener('click', () => wizSetStep(_wizStep - 1));
@@ -3555,10 +3555,10 @@
       $wizOverlay.addEventListener('click', (e) => { if (e.target === $wizOverlay) closeImportWizard(); });
 
       // Re-render preview when settings change on page 2
-      qs('#wizDelimiter').addEventListener('change', () => { if (_wizStep === 2) wizRenderPreview(); });
-      qs('#wizEncoding').addEventListener('change', () => { if (_wizStep === 2) wizRenderPreview(); });
-      qs('#wizHeader').addEventListener('change', () => { if (_wizStep === 2) wizRenderPreview(); });
-      qs('#wizPreviewRows').addEventListener('change', () => { if (_wizStep === 2) wizRenderPreview(); });
+      qs('#wizDelimiter').addEventListener('change', () => { if (_wizStep === 3) wizRenderPreview(); });
+      qs('#wizEncoding').addEventListener('change', () => { if (_wizStep === 3) wizRenderPreview(); });
+      qs('#wizHeader').addEventListener('change', () => { if (_wizStep === 3) wizRenderPreview(); });
+      qs('#wizPreviewRows').addEventListener('change', () => { if (_wizStep === 3) wizRenderPreview(); });
 
       /* --- openFile: now routes to wizard --- */
       const openFile = async () => {
@@ -4090,6 +4090,20 @@
 
         // Delete / Backspace selected cells
         if ((e.key === 'Delete' || e.key === 'Backspace') && getSelectedCells().length > 0) {
+          // If bulk input is in progress, backspace removes last char from buffer
+          if (e.key === 'Backspace' && _bulkInputBuffer && getSelectedCells().length > 1) {
+            e.preventDefault();
+            _bulkInputBuffer = _bulkInputBuffer.slice(0, -1);
+            const value = _bulkInputBuffer;
+            getSelectedCells().forEach($td => {
+              const { row, col } = getCellCoords($td);
+              if (state.data[row]) { state.data[row][col] = value; $td.textContent = value; }
+            });
+            updateStats(); saveToStorage();
+            if (_bulkInputTimer) clearTimeout(_bulkInputTimer);
+            _bulkInputTimer = setTimeout(() => { _bulkInputBuffer = ''; _bulkInputTimer = null; }, 1000);
+            return;
+          }
           const tag = document.activeElement.tagName;
           const editable = document.activeElement.isContentEditable;
           // Only intercept when not actively editing a cell's text
@@ -4099,7 +4113,7 @@
         }
 
         if (e.key === 'Escape') {
-          if (getSelectedCells().length > 0) { clearSelection(); return; }
+          if (getSelectedCells().length > 0) { _bulkInputBuffer = ''; clearSelection(); return; }
           clearSearch(); qs('#settingsOverlay')?.classList.remove('show'); qs('#infoOverlay')?.classList.remove('show'); closeImportWizard(); return;
         }
         if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
@@ -4209,12 +4223,6 @@
       $searchRegex.addEventListener('change', performSearch);
       $searchTargetCol.addEventListener('change', performSearch);
       $filterMode.addEventListener('change', performSearch);
-      qs('#clearFilterBtn').addEventListener('click', () => {
-        $filterMode.checked = false;
-        clearFilter();
-        updateSearchInfo();
-      });
-
       // --- Column Filter Panel Events ---
       qs('#colFilterClose').addEventListener('click', closeColFilterPanel);
       qs('#colFilterApplyBtn').addEventListener('click', applyColumnFilter);
@@ -4323,9 +4331,26 @@
       });
 
       /* --- Init --- */
+      const resetExportWizard = () => {
+        $exportOverlay.classList.remove('show');
+        $expFormat.value = 'csv';
+        $expEncoding.value = 'utf-8';
+        $expBom.checked = true;
+        $expNewline.value = 'crlf';
+        $expQuote.value = 'auto';
+        $expTarget.value = 'all';
+        $expHeader.checked = true;
+        $expSkipEmptyRows.checked = false;
+        $expSkipEmptyCols.checked = false;
+        $expPreview.textContent = '';
+        $expPreviewInfo.textContent = '';
+        qs('#expTargetHint').textContent = '';
+      };
+
       const init = async () => {
         await loadFromStorage();
         await loadSearchHistory();
+        resetExportWizard();
         if (state.data.length > 0) renderTable();
         updateStats();
         updateButtonLabels();
